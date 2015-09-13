@@ -1,19 +1,16 @@
-import comment_finder
-import reddit
+import bot
+import praw
 
 __author__ = 'lukerodgers90@gmail.com'
 __version__ = '1.0'
 
-r = ReferenceError
-
 def main():
-    wrapper = reddit.ApiWrapper()
+    json_comments = bot.get_comments()
+    reddit_api = bot.get_reddit_api()
 
-    json_comments = comment_finder.get_comments()
+    filtered_comments = bot.filter_comments(reddit_api, json_comments)
 
-    comments = wrapper.filter_comments(json_comments)
-
-    for comment in comments:
-        print str(comment.author.name)
+    #for comment in filtered_comments:
+        #print str(comment.author.name)
 
 main()
