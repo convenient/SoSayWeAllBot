@@ -5,6 +5,7 @@ import urllib
 import json
 import random
 
+
 class SoSayWeAllBot:
 
     user_name = 'SoSayWeAllBot'
