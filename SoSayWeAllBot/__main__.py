@@ -4,7 +4,6 @@ __version__ = '1.0'
 import bot
 import database
 import configuration
-import random
 
 def main():
 
@@ -17,23 +16,8 @@ def main():
         config.get_database_name()
     )
 
-    json_comments = bot.get_comments()
-    reddit_api = bot.get_reddit_api()
+    robot = bot.SoSayWeAllBot(config.get_reddit_password(), connection)
 
-    filtered_comments = bot.filter_comments(reddit_api, json_comments)
-
-    images = bot.get_images()
-
-    for comment in filtered_comments:
-        code = str(comment.id)
-
-        if connection.code_exists(code):
-            continue
-        connection.save_code(code)
-
-        image_url = str(random.choice(images))
-        message = '[So Say We All](' + image_url + ')[!](https://github.com/convenient/SoSayWeAllBot)'
-
-        print str(comment.author.name)
+    robot.run()
 
 main()

@@ -33,4 +33,3 @@ class Connection:
             [comment_id, current_time]
         )
         database.commit()
-        database.close()

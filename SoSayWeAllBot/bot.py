@@ -1,66 +1,79 @@
 import praw
 import os
-import ConfigParser
 import requests
 import urllib
 import json
+import random
 
-user_name = 'SoSayWeAllBot'
+class SoSayWeAllBot:
 
-def get_comments():
-    query = urllib.quote('"so say we all"')
-    limit = '10'
-    request = requests.get('http://api.pushshift.io/reddit/search?limit='+limit+'&q='+query)
-    json = request.json()
-    comments = json["data"]
-    return comments
+    user_name = 'SoSayWeAllBot'
 
+    def __init__(self, password, connection):
+        self.connection = connection
 
-def get_config():
-    config = ConfigParser.ConfigParser()
-    config.read(os.path.dirname(__file__) + '/config.cnf')
-    return config
+        with open(os.path.dirname(__file__) + '/images.json') as data_file:
+            data = json.load(data_file)
 
+        self.images = data["images"]
 
-def get_images():
-    with open(os.path.dirname(__file__) + '/images.json') as data_file:
-        data = json.load(data_file)
+        self.praw = praw.Reddit(self.user_name + '/1.0 (https://github.com/convenient/SoSayWeAllBot')
+        self.praw.login(self.user_name, password, disable_warning=True)
+        if not self.praw.is_logged_in():
+            print "Oh god!"
+            exit(-1)
 
-    images = data["images"]
+    def run(self):
+        comments = self.get_comments()
+        counter = 0
 
-    return images
+        for comment in comments:
+            counter += 1
+            print str(counter) + "/" + str(len(comments))
 
+            code = str(comment.id)
 
-def get_reddit_api():
-    password = get_config().get('Reddit', 'password')
+            if self.connection.code_exists(code):
+                continue
+            self.connection.save_code(code)
 
-    r = praw.Reddit(user_name + '/1.0 (https://github.com/convenient/SoSayWeAllBot')
-    r.login(user_name, password, disable_warning=True)
+            image_url = self.get_random_image_url()
+            message = '[So Say We All](' + image_url + ')[!](https://github.com/convenient/SoSayWeAllBot)'
 
-    if not r.is_logged_in():
-        print "Oh god!"
-        exit(-1)
+            # comment.reply(message)
 
-    return r
+            print str(comment.author.name)
 
+    def search_for_comments(self):
+        query = urllib.quote('"so say we all"')
+        limit = '100'
+        request = requests.get('http://api.pushshift.io/reddit/search?limit='+limit+'&q='+query)
+        json = request.json()
+        comments = json["data"]
+        return comments
 
-def filter_comments(reddit_api, comments):
+    def get_random_image_url(self):
+        return str(random.choice(self.images))
 
-    filtered_comments = set()
-    counter = 0
+    def get_reddit_api(self):
+        return self.praw
 
-    for rawcomment in comments:
-        counter += 1
-        print str(counter) + "/" + str(len(comments))
+    def get_comments(self):
 
-        rawcomment['_replies'] = ''
-        comment = praw.objects.Comment(reddit_api, rawcomment)
+        reddit_api = self.get_reddit_api()
+        comments = self.search_for_comments()
 
-        # Do not want to get stuck in a "So Say We All" loop
-        author = str(comment.author.name)
-        if author == user_name:
-            continue
+        filtered_comments = set()
 
-        filtered_comments.add(comment)
+        for rawcomment in comments:
+            rawcomment['_replies'] = ''
+            comment = praw.objects.Comment(reddit_api, rawcomment)
 
-    return filtered_comments
+            # Do not want to get stuck in a "So Say We All" loop
+            author = str(comment.author.name)
+            if author == self.user_name:
+                continue
+
+            filtered_comments.add(comment)
+
+        return filtered_comments
