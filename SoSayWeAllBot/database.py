@@ -10,6 +10,9 @@ class Connection:
     def get_connection(self):
         return self.connection
 
+    def close(self):
+        self.connection.close()
+
     def code_exists(self, comment_id):
         database = self.get_connection()
         cursor = database.cursor()

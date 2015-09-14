@@ -18,6 +18,8 @@ def main():
 
     robot = bot.SoSayWeAllBot(config.get_reddit_password(), connection)
 
-    robot.run()
+    robot.run_loop()
+
+    connection.close()
 
 main()

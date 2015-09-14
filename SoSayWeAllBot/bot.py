@@ -4,13 +4,15 @@ import requests
 import urllib
 import json
 import random
-
+import time
 
 class SoSayWeAllBot:
 
     user_name = 'SoSayWeAllBot'
 
     def __init__(self, password, connection):
+        self.time_started = time.time()
+
         self.connection = connection
 
         with open(os.path.dirname(__file__) + '/images.json') as data_file:
@@ -24,13 +26,19 @@ class SoSayWeAllBot:
             print "Oh god!"
             exit(-1)
 
+    def run_loop(self):
+        # Allow a few second to boot up the app, initialise connection to database etc
+        runtime = 55
+
+        while self.time_started + runtime > time.time():
+            self.run()
+
     def run(self):
         comments = self.get_comments()
         counter = 0
 
         for comment in comments:
             counter += 1
-            print str(counter) + "/" + str(len(comments))
 
             code = str(comment.id)
 
@@ -38,12 +46,11 @@ class SoSayWeAllBot:
                 continue
             self.connection.save_code(code)
 
+            print str(counter) + "/" + str(len(comments))
+
             image_url = self.get_random_image_url()
             message = '[So Say We All](' + image_url + ')[!](https://github.com/convenient/SoSayWeAllBot)'
-
-            # comment.reply(message)
-
-            print str(comment.author.name)
+            comment.reply(message)
 
     def search_for_comments(self):
         query = urllib.quote('"so say we all"')
@@ -66,6 +73,9 @@ class SoSayWeAllBot:
 
         filtered_comments = set()
 
+        # Only look at comments created in the last day
+        recent_comment_time = int(self.time_started - 86400)
+
         for rawcomment in comments:
             rawcomment['_replies'] = ''
             comment = praw.objects.Comment(reddit_api, rawcomment)
@@ -73,6 +83,10 @@ class SoSayWeAllBot:
             # Do not want to get stuck in a "So Say We All" loop
             author = str(comment.author.name)
             if author == self.user_name:
+                continue
+
+            timestamp_created_at = int(comment.created_utc)
+            if (timestamp_created_at < recent_comment_time):
                 continue
 
             filtered_comments.add(comment)
