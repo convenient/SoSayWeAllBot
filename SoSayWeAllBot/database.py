@@ -1,4 +1,5 @@
 import MySQLdb
+import datetime
 
 class Connection:
     def __init__(self, user, password, host, database):
@@ -9,8 +10,27 @@ class Connection:
     def get_connection(self):
         return self.connection
 
-    def get_comment_id(self, comment_id):
-        return False
+    def code_exists(self, comment_id):
+        database = self.get_connection()
+        cursor = database.cursor()
 
-    def save_comment_id(self, comment_id):
-        return False
+        query = "SELECT code FROM replied_to WHERE code = %s LIMIT 1"
+        cursor.execute(query, [comment_id])
+
+        affected_rows = database.affected_rows()
+
+        return bool(affected_rows)
+
+    def save_code(self, comment_id):
+        database = self.get_connection()
+        cursor = database.cursor()
+
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        query = "INSERT INTO replied_to (code, created_at) VALUES (%s, %s)"
+        cursor.execute(
+            query,
+            [comment_id, current_time]
+        )
+        database.commit()
+        database.close()

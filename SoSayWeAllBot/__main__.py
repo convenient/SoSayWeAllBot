@@ -16,6 +16,11 @@ def main():
         config.get_database_name()
     )
 
+    if not connection.code_exists('waffles'):
+        connection.save_code('waffles')
+
+
+    moo = 'cow'
     # json_comments = bot.get_comments()
     # reddit_api = bot.get_reddit_api()
     #
