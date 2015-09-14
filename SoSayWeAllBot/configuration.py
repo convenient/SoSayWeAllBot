@@ -1,7 +1,9 @@
 import os
 import ConfigParser
 
+
 class Config:
+
     def __init__(self):
         self.config = ConfigParser.ConfigParser()
         self.config.read(os.path.dirname(__file__) + '/config.cnf')
@@ -20,5 +22,3 @@ class Config:
 
     def get_database_name(self):
         return self.config.get('SQL', 'db')
-
-

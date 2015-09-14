@@ -3,6 +3,7 @@ import os
 import ConfigParser
 import requests
 import urllib
+import json
 
 user_name = 'SoSayWeAllBot'
 
@@ -14,10 +15,21 @@ def get_comments():
     comments = json["data"]
     return comments
 
+
 def get_config():
     config = ConfigParser.ConfigParser()
     config.read(os.path.dirname(__file__) + '/config.cnf')
     return config
+
+
+def get_images():
+    with open(os.path.dirname(__file__) + '/images.json') as data_file:
+        data = json.load(data_file)
+
+    images = data["images"]
+
+    return images
+
 
 def get_reddit_api():
     password = get_config().get('Reddit', 'password')
@@ -30,6 +42,7 @@ def get_reddit_api():
         exit(-1)
 
     return r
+
 
 def filter_comments(reddit_api, comments):
 
